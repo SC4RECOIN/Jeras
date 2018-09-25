@@ -3,6 +3,6 @@ package networks;
 import utilities.Matrix;
 
 public interface INetwork {
-	public void train(float[][] x, float[][] y, int epochs) throws Exception;
-	public Matrix predict(float[][] x);
+	public void train(Matrix x, Matrix y, int epochs);
+	public Matrix predict(Matrix x);
 }

@@ -20,6 +20,12 @@ public class Matrix {
 		this.columns = columns;
 	}
 	
+	public Matrix(int rows, int columns) {
+		this.values = Initializers.init(rows, columns, Init.NORMAL);
+		this.rows = rows;
+		this.columns = columns;
+	}
+	
 	public Matrix transpose() {
 		float[][] result = new float[this.values[0].length][this.values.length];
         

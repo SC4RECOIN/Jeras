@@ -6,12 +6,12 @@ public class Activations {
 	    return (float) (1 / (1 + Math.pow(Math.E, (-1 * x))));
 	}
 
-	public static float[][] sigmoid(float[][] x, boolean deriv) {
-	    float[][] result = new float[x.length][x[0].length];
+	public static Matrix sigmoid(Matrix x, boolean deriv) {
+		float[][] result = new float[x.rows][x.columns];
 
-	    for (int i = 0; i < x.length; i++) {
-	        for (int j = 0; j < x[i].length; j++) {
-	            float sigmoidCell = sigmoid(x[i][j]);
+	    for (int i = 0; i < x.rows; i++) {
+	        for (int j = 0; j < x.columns; j++) {
+	            float sigmoidCell = sigmoid(x.values[i][j]);
 
 	            if (deriv == true) {
 	                result[i][j] = sigmoidCell * (1 - sigmoidCell);
@@ -20,14 +20,14 @@ public class Activations {
 	            }
 	        }
 	    }
-	    return result;
+	    return new Matrix(result);
 	}
 	
-	public static float[][] sigmoid(float[][] x) {
+	public static Matrix sigmoid(Matrix x) {
 		return sigmoid(x, false);
 	}
 	
-	public static float[][] sigmoidDerivative(float[][] x) {
+	public static Matrix sigmoidDerivative(Matrix x) {
 		return sigmoid(x, true);
 	}
 }
