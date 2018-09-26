@@ -1,94 +1,88 @@
 package networks;
 
 import static utilities.Activations.sigmoid;
+import static utilities.Activations.softmax;
 import static utilities.Activations.sigmoidDerivative;
 
 import java.util.ArrayList;
 
+import utilities.Array;
 import utilities.Initializers.Init;
 import utilities.Matrix;
 
 public class MLP implements INetwork {
 	
-	private int _numInputs;
-	private int[] _hiddenLayers;
-	private int _numOutputs;
+	private ArrayList<Matrix> w;
+	private ArrayList<Array> b;
+	private ArrayList<Matrix> out;
 	
-	private ArrayList<Matrix> _weights;
-	private ArrayList<Matrix> _layerOutputs;
-	
-	private Matrix _x = null;
-	private Matrix _y = null;
-	
-	private Init _initializer;
-	
-	public MLP(int numInputs, int[] hiddenLayers, int numOutputs, Init initializer) {
-		_numInputs = numInputs;
-		_hiddenLayers = hiddenLayers;
-		_numOutputs = numOutputs;
-		_initializer = initializer;
-		
-		_weights = new ArrayList<Matrix>();
-		_layerOutputs = new ArrayList<Matrix>();
-	
-		initWeights();            
-	}
-	
-	public MLP(int numInputs, int[] hiddenLayers, int numOutputs) {
-		this(numInputs, hiddenLayers, numOutputs, Init.NORMAL);        
-	}
-	
-	private void initWeights() {
-		_weights.add(new Matrix(_numInputs, _hiddenLayers[0], _initializer));
-		for (int i = 1; i < _hiddenLayers.length - 1; i++) {
-			_weights.add(new Matrix(_hiddenLayers[i], _hiddenLayers[i+1], _initializer));
+	private final float lr;
+
+	public MLP(int[] networkShape, Init initializer) {
+		// weights
+		w = new ArrayList<Matrix>();
+        for (int i = 0; i < networkShape.length - 1; i++) {
+			w.add(new Matrix(networkShape[i], networkShape[i+1], initializer));
+		} 
+
+		// bias
+        b = new ArrayList<Array>();
+        for (int i = 1; i < networkShape.length; i++) {
+			b.add(new Array(networkShape[i], initializer));
 		}
-		_weights.add(new Matrix(_hiddenLayers[_hiddenLayers.length-1], _numOutputs, _initializer));
+
+		// learning rate
+		lr = 0.0001f;
+
+		// outputs from forward propagation
+		out = new ArrayList<Matrix>();
+	}
+	
+	public MLP(int[] networkShape) {
+		this(networkShape, Init.NORMAL);        
 	}
 
-	private void setTrainingData(Matrix x, Matrix y) {
-		if (x.columns != _numInputs) {
-			throw new RuntimeException("Data shape does not match network inputs");
-		}
-		_x = x;
-		_y = y;
-	}
-	
-	private void feedForward(Matrix x) {
-		_layerOutputs.clear();
-		_layerOutputs.add(sigmoid(x.dot(_weights.get(0))));
-		for (int i = 1; i < _weights.size(); i++) {
-			_layerOutputs.add(sigmoid(_layerOutputs.get(i-1).dot(_weights.get(i))));
-		}
-	}
-	
-	private void backPropogation() {
-		ArrayList<Matrix> results = new ArrayList<Matrix>();
-		
-		try {
-			// application of the chain rule to find derivative of the loss function with respect to weights
-			Matrix subResult = _y.sub(_layerOutputs.get(1)).mult(2).mult(sigmoidDerivative(_layerOutputs.get(1)));
-			results.add(_layerOutputs.get(0).T().dot(subResult));
-			results.add(_x.T().dot(subResult.dot(_weights.get(1).T()).mult(sigmoidDerivative(_layerOutputs.get(0)))));
-	
-			_weights.set(1, _weights.get(1).add(results.get(0)));
-			_weights.set(0, _weights.get(0).add(results.get(1)));
-		
+	private void forwardPropagate(Matrix x) {
+		out.clear();
+
+		try { 
+			out.add(sigmoid(x.dot(w.get(0)).add(b.get(0)))); 
+			out.add(softmax(out.get(0).dot(w.get(1)).add(b.get(1))));
+			
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public void train(Matrix x, Matrix y, int epochs) {
-		setTrainingData(x, y);
+	private void backPropagate(Matrix x, Matrix Y) {
+		try {
+			Matrix delta2 = out.get(1).sub(Y);
+		    Matrix delta1 = delta2.dot(w.get(1).T()).mult(sigmoidDerivative(x.dot(w.get(0)).add(b.get(0))));
+		    
+		    System.out.println(delta2);
+		    System.out.println(delta1);
+		    System.exit(0);
+	
+		    w.set(1, w.get(1).sub(out.get(0).T().dot(delta2).mult(lr)));
+		    w.set(0, w.get(0).sub(out.get(0).T().dot(delta1).mult(lr)));
+	
+		    b.set(1, b.get(1).sub(delta2.sum()).mult(lr));
+		    b.set(0, b.get(0).sub(delta1.sum()).mult(lr));
+		    
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void train(Matrix x, Matrix y, int epochs)  {
 		for (int i = 0; i < epochs; i++) {
-			feedForward(_x);
-			backPropogation();
+			forwardPropagate(x);
+			backPropagate(x, y);
 		}
 	}
 	
 	public Matrix predict(Matrix x) {
-		feedForward(x);
-		return _layerOutputs.get(_layerOutputs.size() - 1);
+		forwardPropagate(x);
+		return out.get(out.size() - 1);
 	}
 }

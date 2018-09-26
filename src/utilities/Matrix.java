@@ -28,7 +28,6 @@ public class Matrix {
 	
 	public Matrix transpose() {
 		float[][] result = new float[this.values[0].length][this.values.length];
-        
 		for (int i = 0; i < rows; i++) {
         	for (int j = 0; j < columns; j++) {
         		result[j][i] = values[i][j];
@@ -41,12 +40,23 @@ public class Matrix {
 		return transpose();
 	}
 	
+	public Array sum() {
+		float[] result = new float[this.columns];
+		for (int i = 0; i < columns; i++) {
+			result[i] = 0;
+	        for (int j = 0; j < rows; j++){
+	        	result[i] += this.values[j][i];
+	        }
+	    }
+		return new Array(result);
+	}
+	
 	public Matrix sub(Matrix matrix2) throws Exception {
 	    if (this.rows != matrix2.rows || this.columns != matrix2.columns){
 	        throw new Exception("Cannot subtract matrices of different sizes");
 	    }
+	    
 	    float[][] result = new float[rows][columns];
-
 	    for (int i = 0; i < rows; i++){
 	        for (int j = 0; j < columns; j++){
 	        	result[i][j] = this.values[i][j] - matrix2.values[i][j];
@@ -69,7 +79,25 @@ public class Matrix {
 	    return new Matrix(result);
 	}
 	
-	public Matrix mult(int scalar) {
+	public Matrix add(float[] arr) throws Exception {
+	    if (this.columns != arr.length) {
+	        throw new Exception("Cannot add array of length " + arr.length + " with matrix with " + this.columns + " columns");
+	    }
+	    
+	    float[][] result = new float[rows][columns];
+	    for (int i = 0; i < rows; i++){
+	        for (int j = 0; j < columns; j++){
+	        	result[i][j] = this.values[i][j] + arr[j];
+	        }
+	    }
+	    return new Matrix(result);
+	}
+	
+	public Matrix add(Array arr) throws Exception {
+		return this.add(arr.values);
+	}
+	
+	public Matrix mult(float scalar) {
 		float[][] result = new float[rows][columns];
 		
 		for (int i = 0; i < rows; i++){
@@ -78,6 +106,10 @@ public class Matrix {
 	        }
 	    }
 		return new Matrix(result);
+	}
+	
+	public Matrix mult(int scalar) {
+		return mult((float) scalar);
 	}
 	
 	public Matrix mult(Matrix matrix2) throws Exception {
@@ -89,6 +121,20 @@ public class Matrix {
 	    for (int i = 0; i < rows; i++){
 	        for (int j = 0; j < columns; j++){
 	        	result[i][j] = this.values[i][j] * matrix2.values[i][j];
+	        }
+	    }
+	    return new Matrix(result);
+	}
+	
+	public Matrix div(Array arr) throws Exception {
+		if (this.columns != arr.length) {
+	        throw new Exception(String.format("Cannot divide Array(%d) with Matrix(%d,%d)", arr.length, this.rows, this.columns));
+	    }
+	    
+	    float[][] result = new float[rows][columns];
+	    for (int i = 0; i < rows; i++){
+	        for (int j = 0; j < columns; j++){
+	        	result[i][j] = this.values[i][j] / arr.values[j];
 	        }
 	    }
 	    return new Matrix(result);
@@ -125,13 +171,15 @@ public class Matrix {
 	
 	@Override
     public String toString() {
-		String output = "[ ";
+		String output = "[";
         for (int i = 0; i < rows; i++) {
+        	output += "[";
         	for (int j = 0; j < columns; j++) {
+        		if (this.values[i][j] > 0) { output += " "; }
         		output += String.format("%.3f ", this.values[i][j]); 
         	}
         	if (i == rows-1) { output += "]"; }
-        	output += "\n  ";
+        	output += "]\n ";
         }
         return output;
     }

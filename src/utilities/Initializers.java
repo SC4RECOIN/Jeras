@@ -19,6 +19,7 @@ public class Initializers {
 				return random(rows, cols, true);
 		}
 	}
+	
 	private static float[][] random(int inputs, int outputs, boolean normal) {
 		Random rand = new Random();
 		float[][] weights = new float[inputs][outputs];
@@ -32,6 +33,27 @@ public class Initializers {
 			}
 		}
 		return weights;
+	}
+	
+	public static float[] init(int length, Init initializer) {
+		switch (initializer) {
+			case RANDOM:
+				return random(length, false);
+			case NORMAL:
+				return random(length, true);
+			default:
+				return random(length, true);
+		}
+	}
+	
+	private static float[] random(int length, boolean normal) {
+		Random rand = new Random();
+		float[] array = new float[length];
+		for (int i = 0; i < length; i++) {
+			if (normal) { array[i] = (float) rand.nextGaussian(); }
+			else { array[i] = rand.nextFloat(); }
+		}
+		return array;
 	}
 
 	// also known as the Xavier uniform initializer
