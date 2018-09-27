@@ -13,11 +13,18 @@ public class XOR {
 		
 	    Matrix y = new Matrix(new float[][] {{1, 0},{0, 1},{0, 1},{1, 0}});
 
-	    // inputs - hidden - outputs
-	    int[] networkShape = {x.columns, 5, 5, y.columns};
-	    MLP nn = new MLP(networkShape, 0.1f);
+	    int inputs = x.columns;
+	    int hidden1 = 8;
+	    int hidden2 = 8;
+	    int outputs = y.columns;
+	    int epochs = 1000;
+	    float lr = 0.1f;
 	    
-	    nn.train(x, y, 1000);
+	    int[] networkShape = {inputs, hidden1, hidden2, outputs};
+	    
+	    MLP nn = new MLP(networkShape, lr);
+	    
+	    nn.train(x, y, epochs);
 	    System.out.println(nn.predict(x));
 	}
 }

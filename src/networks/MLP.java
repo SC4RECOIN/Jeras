@@ -45,14 +45,20 @@ public class MLP implements INetwork {
 	private void forwardPropagate(Matrix x) {
 		out.clear();
 
-		try { 
-			out.add(sigmoid(x.dot(w.get(0)).add(b.get(0))));
-			out.add(softmax(out.get(0).dot(w.get(1)).add(b.get(1))));
-			
-//			out.add(sigmoid(x.dot(w.get(0)).add(b.get(0))));
-//			out.add(sigmoid(out.get(0).dot(w.get(1)).add(b.get(1))));
-//			out.add(softmax(out.get(1).dot(w.get(2)).add(b.get(2))));
-			
+		try {
+			for (int i = 0; i < w.size(); i++) {
+				// x is input for first layer
+				if (i == 0) {
+					out.add(sigmoid(x.dot(w.get(i)).add(b.get(i))));
+				} 
+				// softmax activation on last layer
+				else if (i == w.size() - 1) {
+					out.add(softmax(out.get(i-1).dot(w.get(i)).add(b.get(i))));
+				}
+				else {
+					out.add(sigmoid(out.get(i-1).dot(w.get(i)).add(b.get(i))));
+				}
+			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -60,15 +66,28 @@ public class MLP implements INetwork {
 
 	private void backPropagate(Matrix X, Matrix Y) {
 		try {
-			Matrix delta2 = out.get(2).sub(Y);
-		    Matrix delta1 = delta2.dot(w.get(1).T()).mult(sigmoidDerivative(X.dot(w.get(0)).add(b.get(0))));
-	
-		    w.set(1, w.get(1).sub(out.get(0).T().dot(delta2).mult(_lr)));
-		    w.set(0, w.get(0).sub(X.T().dot(delta1).mult(_lr)));
-
-		    b.set(1, b.get(1).sub(delta2.sumaxis().mult(_lr)));
-		    b.set(0, b.get(0).sub(delta1.sumaxis().mult(_lr)));
+			// calculate layer errors using derivative
+		    ArrayList<Matrix> deltas = new ArrayList<Matrix>();
+		    deltas.add(out.get(out.size()-1).sub(Y));
+		    for (int i = out.size() - 1; i > 0; i--) {
+		    	Matrix d = deltas.get(deltas.size() - 1);
+		    	if (i == 1) {
+		    		deltas.add(d.dot(w.get(i).T()).mult(sigmoidDerivative(X.dot(w.get(i-1)).add(b.get(i-1)))));
+		    	} else {
+		    		deltas.add(d.dot(w.get(i).T()).mult(sigmoidDerivative(out.get(i-2).dot(w.get(i-1)).add(b.get(i-1)))));
+		    	}
+		    }
 		    
+		    // correct weights and biases using learning rate
+		    Matrix delta = deltas.get(deltas.size() - 1);
+		    w.set(0, w.get(0).sub(X.T().dot(delta).mult(_lr)));
+		    b.set(0, b.get(0).sub(delta.sumaxis().mult(_lr)));
+		    for (int i = 1; i < w.size(); i++) {
+		    	delta = deltas.get(deltas.size() - i - 1);
+		    	w.set(i, w.get(i).sub(out.get(i-1).T().dot(delta).mult(_lr)));
+		    	b.set(i, b.get(i).sub(delta.sumaxis().mult(_lr)));
+		    }
+
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -78,7 +97,7 @@ public class MLP implements INetwork {
 		double sum = 0;
 		Matrix loss;
 		try {
-			loss = y.mult(-1).mult(out.get(1).log());
+			loss = y.mult(-1).mult(out.get(out.size() - 1).log());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -97,7 +116,7 @@ public class MLP implements INetwork {
 			backPropagate(x, y);
 			
 			if (i % 100 == 0) {
-				System.out.format("Epoch %d - loss: %.2f\n", i, calcLoss(y));
+				System.out.format("Epoch %d - loss: %.3f\n", i, calcLoss(y));
 			}
 		}
 		System.out.println();
