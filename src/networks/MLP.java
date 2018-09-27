@@ -16,9 +16,9 @@ public class MLP implements INetwork {
 	private ArrayList<Array> b;
 	private ArrayList<Matrix> out;
 	
-	private final float lr;
+	private final float _lr;
 
-	public MLP(int[] networkShape, Init initializer) {
+	public MLP(int[] networkShape, float lr, Init initializer) {
 		// weights
 		w = new ArrayList<Matrix>();
         for (int i = 0; i < networkShape.length - 1; i++) {
@@ -32,22 +32,26 @@ public class MLP implements INetwork {
 		}
 
 		// learning rate
-		lr = 0.01f;
+		_lr = lr;
 
 		// outputs from forward propagation
 		out = new ArrayList<Matrix>();
 	}
 	
-	public MLP(int[] networkShape) {
-		this(networkShape, Init.NORMAL);        
+	public MLP(int[] networkShape, float lr) {
+		this(networkShape, lr, Init.NORMAL);        
 	}
 
 	private void forwardPropagate(Matrix x) {
 		out.clear();
 
 		try { 
-			out.add(sigmoid(x.dot(w.get(0)).add(b.get(0)))); 
+			out.add(sigmoid(x.dot(w.get(0)).add(b.get(0))));
 			out.add(softmax(out.get(0).dot(w.get(1)).add(b.get(1))));
+			
+//			out.add(sigmoid(x.dot(w.get(0)).add(b.get(0))));
+//			out.add(sigmoid(out.get(0).dot(w.get(1)).add(b.get(1))));
+//			out.add(softmax(out.get(1).dot(w.get(2)).add(b.get(2))));
 			
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -56,14 +60,14 @@ public class MLP implements INetwork {
 
 	private void backPropagate(Matrix X, Matrix Y) {
 		try {
-			Matrix delta2 = out.get(1).sub(Y);
+			Matrix delta2 = out.get(2).sub(Y);
 		    Matrix delta1 = delta2.dot(w.get(1).T()).mult(sigmoidDerivative(X.dot(w.get(0)).add(b.get(0))));
 	
-		    w.set(1, w.get(1).sub(out.get(0).T().dot(delta2).mult(lr)));
-		    w.set(0, w.get(0).sub(X.T().dot(delta1).mult(lr)));
+		    w.set(1, w.get(1).sub(out.get(0).T().dot(delta2).mult(_lr)));
+		    w.set(0, w.get(0).sub(X.T().dot(delta1).mult(_lr)));
 
-		    b.set(1, b.get(1).sub(delta2.sumaxis().mult(lr)));
-		    b.set(0, b.get(0).sub(delta1.sumaxis().mult(lr)));
+		    b.set(1, b.get(1).sub(delta2.sumaxis().mult(_lr)));
+		    b.set(0, b.get(0).sub(delta1.sumaxis().mult(_lr)));
 		    
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -92,10 +96,11 @@ public class MLP implements INetwork {
 			forwardPropagate(x);
 			backPropagate(x, y);
 			
-			if (i%100 == 0) {
-				System.out.format("%.2f\n", calcLoss(y));
+			if (i % 100 == 0) {
+				System.out.format("Epoch %d - loss: %.2f\n", i, calcLoss(y));
 			}
 		}
+		System.out.println();
 	}
 	
 	public Matrix predict(Matrix x) {
