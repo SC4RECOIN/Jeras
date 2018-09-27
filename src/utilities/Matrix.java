@@ -40,7 +40,18 @@ public class Matrix {
 		return transpose();
 	}
 	
-	public Array sum() {
+	public Matrix sum() {
+		float[][] result = new float[this.rows][1];
+		for (int i = 0; i < rows; i++) {
+			result[i][0] = 0;
+	        for (int j = 0; j < columns; j++){
+	        	result[i][0] += this.values[i][j];
+	        }
+	    }
+		return new Matrix(result);
+	}
+	
+	public Array sumaxis() {
 		float[] result = new float[this.columns];
 		for (int i = 0; i < columns; i++) {
 			result[i] = 0;
@@ -48,6 +59,7 @@ public class Matrix {
 	        	result[i] += this.values[j][i];
 	        }
 	    }
+		
 		return new Array(result);
 	}
 	
@@ -114,7 +126,7 @@ public class Matrix {
 	
 	public Matrix mult(Matrix matrix2) throws Exception {
 		if (this.rows != matrix2.rows || this.columns != matrix2.columns) {
-	        throw new Exception("Cannot bulk multiply matrices of different sizes");
+	        throw new Exception("Cannot multiply matrices of different sizes");
 	    }
 	    
 	    float[][] result = new float[rows][columns];
@@ -126,19 +138,32 @@ public class Matrix {
 	    return new Matrix(result);
 	}
 	
-	public Matrix div(Array arr) throws Exception {
-		if (this.columns != arr.length) {
-	        throw new Exception(String.format("Cannot divide Array(%d) with Matrix(%d,%d)", arr.length, this.rows, this.columns));
+	public Matrix div(Matrix matrix2) throws Exception {
+		if (this.rows != matrix2.rows) {
+	        throw new Exception("Incompatible matrices for division");
 	    }
-	    
-	    float[][] result = new float[rows][columns];
-	    for (int i = 0; i < rows; i++){
-	        for (int j = 0; j < columns; j++){
-	        	result[i][j] = this.values[i][j] / arr.values[j];
-	        }
-	    }
+		float[][] result;
+		if (this.columns == matrix2.columns) {
+		    result = new float[rows][columns];
+		    for (int i = 0; i < rows; i++){
+		        for (int j = 0; j < columns; j++){
+		        	result[i][j] = this.values[i][j] / matrix2.values[i][j];
+		        }
+		    }
+		} else if (matrix2.columns == 1) {
+			result = new float[rows][columns];
+		    for (int i = 0; i < rows; i++){
+		        for (int j = 0; j < columns; j++){
+		        	result[i][j] = this.values[i][j] / matrix2.values[i][0];
+		        }
+		    }
+		} else {
+			throw new Exception("Incompatible matrices for division");
+		}
+		
 	    return new Matrix(result);
 	}
+	
 	
 	public Matrix matmul(Matrix matrix2) throws Exception {
         if(this.columns != matrix2.rows) {
@@ -164,6 +189,17 @@ public class Matrix {
 		        for (int k = 0; k < this.columns; k++) { 
 		            result[i][j] += this.values[i][k] * matrix2.values[k][j];
 		        }
+		    }
+		}
+		return new Matrix(result);
+	}
+	
+	public Matrix log() {
+		float [][] result = new float[rows][columns];
+		
+		for (int i = 0; i < this.rows; i++) { 
+		    for (int j = 0; j < this.columns; j++) { 
+		        result[i][j] += Math.log(this.values[i][j]);
 		    }
 		}
 		return new Matrix(result);

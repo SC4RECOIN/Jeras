@@ -41,4 +41,13 @@ public class Array {
 		}
 		return new Array(result);
 	}
+	
+	@Override
+    public String toString() {
+		String output = "[";
+		for (int i = 0; i < this.length - 1; i++) {
+			output += values[i] + ", ";
+		}
+		return output + this.values[this.length - 1] + "]";
+	}
 }

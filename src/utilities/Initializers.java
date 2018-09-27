@@ -7,6 +7,7 @@ public class Initializers {
 	public enum Init {
 		RANDOM
 	  , NORMAL
+	  , ONES
 	}
 	
 	public static float[][] init(int rows, int cols, Init initializer) {
@@ -15,6 +16,8 @@ public class Initializers {
 				return random(rows, cols, false);
 			case NORMAL:
 				return random(rows, cols, true);
+			case ONES:
+				return ones(rows, cols);
 			default:
 				return random(rows, cols, true);
 		}
@@ -35,17 +38,6 @@ public class Initializers {
 		return weights;
 	}
 	
-	public static float[] init(int length, Init initializer) {
-		switch (initializer) {
-			case RANDOM:
-				return random(length, false);
-			case NORMAL:
-				return random(length, true);
-			default:
-				return random(length, true);
-		}
-	}
-	
 	private static float[] random(int length, boolean normal) {
 		Random rand = new Random();
 		float[] array = new float[length];
@@ -54,6 +46,41 @@ public class Initializers {
 			else { array[i] = rand.nextFloat(); }
 		}
 		return array;
+	}
+	
+	public static float[] init(int length, Init initializer) {
+		switch (initializer) {
+			case RANDOM:
+				return random(length, false);
+			case NORMAL:
+				return random(length, true);
+			case ONES:
+				return ones(length);
+			default:
+				return random(length, true);
+		}
+	}
+	
+	private static float[][] constant(int rows, int columns, int constant) {
+		float[][] matrix = new float[rows][columns];
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < columns; j++) {
+				matrix[i][j] = constant;
+			}
+		}
+		return matrix;
+	}
+	
+	private static float[][] ones(int rows, int columns) {
+		return constant(rows, columns, 1);
+	}
+	
+	private static float[] ones(int length) {
+		float[] result = new float[length];
+		for (int i = 0; i < length; i ++) {
+			result[i] = 1;
+		}
+		return result;
 	}
 
 	// also known as the Xavier uniform initializer

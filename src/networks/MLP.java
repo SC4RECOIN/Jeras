@@ -32,7 +32,7 @@ public class MLP implements INetwork {
 		}
 
 		// learning rate
-		lr = 0.0001f;
+		lr = 0.01f;
 
 		// outputs from forward propagation
 		out = new ArrayList<Matrix>();
@@ -54,30 +54,47 @@ public class MLP implements INetwork {
 		}
 	}
 
-	private void backPropagate(Matrix x, Matrix Y) {
+	private void backPropagate(Matrix X, Matrix Y) {
 		try {
 			Matrix delta2 = out.get(1).sub(Y);
-		    Matrix delta1 = delta2.dot(w.get(1).T()).mult(sigmoidDerivative(x.dot(w.get(0)).add(b.get(0))));
-		    
-		    System.out.println(delta2);
-		    System.out.println(delta1);
-		    System.exit(0);
+		    Matrix delta1 = delta2.dot(w.get(1).T()).mult(sigmoidDerivative(X.dot(w.get(0)).add(b.get(0))));
 	
 		    w.set(1, w.get(1).sub(out.get(0).T().dot(delta2).mult(lr)));
-		    w.set(0, w.get(0).sub(out.get(0).T().dot(delta1).mult(lr)));
-	
-		    b.set(1, b.get(1).sub(delta2.sum()).mult(lr));
-		    b.set(0, b.get(0).sub(delta1.sum()).mult(lr));
+		    w.set(0, w.get(0).sub(X.T().dot(delta1).mult(lr)));
+
+		    b.set(1, b.get(1).sub(delta2.sumaxis().mult(lr)));
+		    b.set(0, b.get(0).sub(delta1.sumaxis().mult(lr)));
 		    
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public float calcLoss(Matrix y) {
+		double sum = 0;
+		Matrix loss;
+		try {
+			loss = y.mult(-1).mult(out.get(1).log());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		for (int j=0; j < loss.rows; j++) {
+			for (int k=0; k < loss.columns; k++) {
+				sum += loss.values[j][k];
+			}
+		}
+		return (float) sum;
 	}
 
 	public void train(Matrix x, Matrix y, int epochs)  {
 		for (int i = 0; i < epochs; i++) {
 			forwardPropagate(x);
 			backPropagate(x, y);
+			
+			if (i%100 == 0) {
+				System.out.format("%.2f\n", calcLoss(y));
+			}
 		}
 	}
 	

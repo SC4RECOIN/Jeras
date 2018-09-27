@@ -44,9 +44,9 @@ public class Activations {
 	
 	public static Matrix softmax(Matrix x) throws Exception {
 		Matrix exp = exp(x);
-		Array sum = exp.sum();
+		Matrix sum = exp.sum();
 		Matrix result = exp.div(sum);
-		
+
 		return result;
 	}
 }
