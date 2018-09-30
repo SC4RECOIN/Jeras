@@ -211,7 +211,7 @@ public class Matrix {
         for (int i = 0; i < rows; i++) {
             output += "[";
             for (int j = 0; j < columns; j++) {
-                if (this.values[i][j] > 0) { output += " "; }
+                if (this.values[i][j] >= 0) { output += " "; }
                 output += String.format("%.3f ", this.values[i][j]); 
             }
             if (i == rows-1) { output += "]"; }

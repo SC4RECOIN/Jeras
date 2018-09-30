@@ -44,7 +44,7 @@ public class MLP implements INetwork {
 
     private void forwardPropagate(Matrix x) {
         out.clear();
-
+        	
         try {
             for (int i = 0; i < w.size(); i++) {
                 // x is input for first layer
