@@ -5,7 +5,7 @@ import layers.Sequential;
 import utilities.Matrix;
 
 public class XORSequential {
-	public static void main(String[] args) {
+    public static void main(String[] args) {
         Matrix x = new Matrix(new float[][] {{0,0,1},
                                              {0,1,1},
                                              {1,0,1},

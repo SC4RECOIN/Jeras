@@ -1,6 +1,25 @@
 package utilities;
 
 public class Activations {
+	
+	public enum Activation {
+		sigmoid
+	  , softmax
+	  , linear
+	}
+	
+	public static Activation getEnum(String activation) {
+		switch (activation) {
+			case "sigmoid":
+				return Activation.sigmoid;
+			case "linear":
+				return Activation.linear;
+			case "softmax":
+				return Activation.softmax;
+			default:
+				throw new RuntimeException("Unrecognized activation funtion: " + activation);
+		}
+	}
     
     private static float sigmoid(float x) {
         return (float) (1 / (1 + Math.pow(Math.E, (-1 * x))));
