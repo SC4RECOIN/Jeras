@@ -36,5 +36,5 @@ model.fit(x, y, epochs);
 System.out.println(model.predict(x));
 ```
 
-So far I only have Dense layers but plan to implement Convolusional layers next.
+So far I only have Dense layers but plan to implement Convolution layers next.
 
