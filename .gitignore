@@ -12,3 +12,6 @@
 
 .classpath
 .project
+
+# training files
+*.csv
